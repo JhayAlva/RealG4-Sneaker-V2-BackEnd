@@ -145,14 +145,12 @@ export class AuthService {
 
   async operarDireccion(datosDireccion: OperarDireccionDto): Promise<LoginResponse> {
     const { direccion, operacion, usuarioId } = datosDireccion;
-    console.log('Operaciones que se van a realizar: ', direccion, operacion);
 
     switch (operacion) {
       case 'borrar':
         const direccionObjectId = new Types.ObjectId(direccion._id);
         let _resultadoDelete = await this.userModel.updateOne({ _id: usuarioId },
           { $pull: { 'direcciones': { _id: direccionObjectId } } })
-        console.log('resultado del delete...', _resultadoDelete);
 
         if (_resultadoDelete.modifiedCount != 1) throw new UnauthorizedException(`Error al borrar direccion con _id:${JSON.stringify(direccion)}`);
 
@@ -161,15 +159,12 @@ export class AuthService {
         direccion._id = new mongoose.Types.ObjectId();
         let _resultCreate = await this.userModel.updateOne({ _id: usuarioId },
           { $push: { 'direcciones': direccion } });
-        console.log('resultado de crear una nueva direccion...', _resultCreate);
 
         if (_resultCreate.modifiedCount != 1) throw new UnauthorizedException(`Error al Crear direccion ${JSON.stringify(direccion)}`);
 
         break;
       case 'modificar':
         try {
-          console.log('usuarioId:', usuarioId);
-          console.log('direccion._id:', direccion._id);
 
           const ObjectId = mongoose.Types.ObjectId;
           const id_usuario = new ObjectId(usuarioId);
@@ -185,8 +180,6 @@ export class AuthService {
             { $set: { 'direcciones.$': direccion } },
             { new: true }
           );
-
-          console.log('Resultado de modificar una nueva direccion...', _resultModif);
 
           if (!_resultModif) {
             throw new UnauthorizedException(`Error al Modificar direccion con _id: ${direccion._id}`);
@@ -268,7 +261,6 @@ export class AuthService {
           let productoId;
 
           newPedido.elementosPedido.forEach(e => {
-            console.log('Elementos antes de la asignación: ', e);
             productoId = e.productoItem._id;
 
             _newItems.push({
@@ -278,19 +270,15 @@ export class AuthService {
           });
 
           newPedido.elementosPedido = _newItems;
-          console.log('----- antes de insertar ----', newPedido);
 
           // Verificamos que newPedido tenga todos los datos necesarios
           if (newPedido && newPedido._id && newPedido.elementosPedido.length > 0) {
             let _insertarPedido = await this.pedidoModal.create(newPedido);
-            console.log('Resultado del insert pedido....', _insertarPedido);
 
             let _resultUpdateProducto = await this.productoModal.updateOne({ _id: productoId }, {
               $set: { "ultimaVenta": newPedido.totalPedido },
               $inc: { "paresVendidos": 1 } // Esto incrementa el valor de paresVendidos en 1
             });
-
-            console.log('Resultado modificación cliente agregando pedidos...', _resultUpdateProducto);
 
             const user = await this.userModel.findOne({ _id: newPedido.idCliente })
               .populate('direcciones', 'pedidos')
@@ -310,8 +298,6 @@ export class AuthService {
           }
         }
       } else {
-        console.log("Pagar con paypal");
-
         //Insertar el pedido Pendiento en la base de datos
         let _idPedido = new mongoose.Types.ObjectId();
         newPedido._id = _idPedido;
@@ -329,7 +315,6 @@ export class AuthService {
         });
 
         let _insertarPedido = await this.pedidoPendienteModal.create(newPedido);
-        console.log('Resultado del insert pedido....', _insertarPedido);
 
         // Manejar otros métodos de pago si es necesario
         const orderRequest = {
@@ -430,8 +415,6 @@ export class AuthService {
           elementosPedido: pedido.elementosPedido
         });
 
-        console.log('valor del newPedido: ', newPedido);
-
         await this.pedidoPendienteModal.deleteOne({ _id: new mongoose.Types.ObjectId(pedidoId) });
 
         let productoId;
@@ -444,8 +427,6 @@ export class AuthService {
           $set: { "ultimaVenta": newPedido.totalPedido },
           $inc: { "paresVendidos": 1 } // Esto incrementa el valor de paresVendidos en 1
         });
-
-        console.log('Resultado........', _resultUpdateProducto);
 
         const user = await this.userModel.findOne({ _id: newPedido.idCliente })
           .populate('direcciones', 'pedidos')
@@ -480,7 +461,6 @@ export class AuthService {
     const pedidoRecuperado = await this.pedidoModal.findById( new Types.ObjectId(idPedido))
     .populate('elementosPedido.productoItem')
     .exec();
-    console.log('Pedido encontrado: ',pedidoRecuperado);
     return pedidoRecuperado;
   }
 

@@ -55,13 +55,11 @@ export class AuthController {
 
   @Post('/OperarDirecciones')
   operarDirecciones(@Body() operarDireccion:OperarDireccionDto){
-    console.log('Entro');
     return this.authService.operarDireccion(operarDireccion);
   }
 
   @Post('/FinalizarPedidoCliente')
   async FinalizarPedido(@Body() FinalizarPedido:FinalizarPedidoDto ){
-    console.log('Cuerpo de la solicitud:', FinalizarPedido);
     return this.authService.FinalizarPedido(FinalizarPedido);
   }
 
@@ -78,7 +76,6 @@ export class AuthController {
 
   @Get('/GetPedidoCliente/:idPedido')
   getPedido(@Param('idPedido') idPedido:string):Promise<PedidoCliente>{
-    console.log('Valor del id enviado por el front: ',idPedido);
     return this.authService.getPedidoUsuario(idPedido);
   }
 
