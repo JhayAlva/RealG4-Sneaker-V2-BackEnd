@@ -31,6 +31,7 @@ import { PedidoPendiente } from './entities/pedidoPendiente.entity';
 export class AuthService {
 
   private stripe: Stripe
+  private frontendUrl: string;
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
@@ -54,11 +55,10 @@ export class AuthService {
 
     private httpService: HttpService,
 
-    private frontendUrl = this.configService.get<string>('FRONTEND_URL') ?? 'http://localhost:4200',
-
     private configService: ConfigService
   ) {
     this.stripe = new Stripe(this.configService.get<string>('STRIPE_SECRET_KEY'));
+    this.frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
 
   }
 
@@ -459,10 +459,10 @@ export class AuthService {
     }
   }
 
-  async getPedidoUsuario(idPedido:string):Promise<PedidoCliente>{
-    const pedidoRecuperado = await this.pedidoModal.findById( new Types.ObjectId(idPedido))
-    .populate('elementosPedido.productoItem')
-    .exec();
+  async getPedidoUsuario(idPedido: string): Promise<PedidoCliente> {
+    const pedidoRecuperado = await this.pedidoModal.findById(new Types.ObjectId(idPedido))
+      .populate('elementosPedido.productoItem')
+      .exec();
     return pedidoRecuperado;
   }
 
