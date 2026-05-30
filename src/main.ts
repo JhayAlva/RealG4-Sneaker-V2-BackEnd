@@ -4,10 +4,14 @@ import { AppModule } from './app.module';
 import * as express from 'express';
 
 async function bootstrap() {
+    const allowedOrigins = [
+    'https://realg4sneaker.netlify.app',
+    'http://localhost:4200'
+  ];
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'https://realgsneaker.netlify.app',
+    origin: allowedOrigins,
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true
   });
