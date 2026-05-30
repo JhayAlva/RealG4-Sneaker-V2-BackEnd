@@ -54,6 +54,8 @@ export class AuthService {
 
     private httpService: HttpService,
 
+    private frontendUrl = this.configService.get<string>('FRONTEND_URL') ?? 'http://localhost:4200',
+
     private configService: ConfigService
   ) {
     this.stripe = new Stripe(this.configService.get<string>('STRIPE_SECRET_KEY'));
@@ -398,7 +400,7 @@ export class AuthService {
           return {
             success: false,
             message: 'Pedido no encontrado',
-            redirect_url: 'https://tu-frontend.com/pago-error',
+            redirect_url: `${this.frontendUrl}/pago-error`,
           };
         }
         const newPedido = await this.pedidoModal.create({
@@ -442,7 +444,7 @@ export class AuthService {
         return {
           success: true,
           message: 'Pago completado con éxito',
-          redirect_url: `http://localhost:4200/es-Es/pedido-finalizado/${newPedido.id}?talla=${newPedido.tallaSeleccionado}&precio=${newPedido.precioSeleccionado}`, // URL final en el frontend
+          redirect_url: `${this.frontendUrl}/es-Es/pedido-finalizado/${newPedido.id}?talla=${newPedido.tallaSeleccionado}&precio=${newPedido.precioSeleccionado}`, // URL final en el frontend
         };
       }
     } catch (error) {
@@ -452,7 +454,7 @@ export class AuthService {
       return {
         success: false,
         message: 'Error al capturar el pago de PayPal',
-        redirect_url: 'https://tu-frontend.com/pago-error', // URL de error en el frontend
+        redirect_url: `${this.frontendUrl}/pago-error`, // URL de error en el frontend
       };
     }
   }
