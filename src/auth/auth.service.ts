@@ -31,7 +31,8 @@ import { PedidoPendiente } from './entities/pedidoPendiente.entity';
 export class AuthService {
 
   private stripe: Stripe
-  private frontendUrl: string;
+  private frontEndUrl: string;
+  private backEndUrl:string;
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
@@ -58,7 +59,8 @@ export class AuthService {
     private configService: ConfigService
   ) {
     this.stripe = new Stripe(this.configService.get<string>('STRIPE_SECRET_KEY'));
-    this.frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
+    this.frontEndUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
+    this.backEndUrl = this.configService.get<string>('BACKEND_URL') || 'http://localhost:3000';
 
   }
 
@@ -331,8 +333,8 @@ export class AuthService {
             brand_name: 'RealG4Sneaker',
             user_action: 'PAY_NOW',
             landing_page: 'NO_PREFERENCE',
-            return_url: `http://localhost:3000/auth/execute-payment?pedidoId=${newPedido._id}`,  // URL a la que PayPal redirige tras la aprobación
-            cancel_url: 'http://localhost:3000/auth/cancel-payment',    // URL si el usuario cancela el pago
+            return_url: `${this.backEndUrl}/auth/execute-payment?pedidoId=${newPedido._id}`,  // URL a la que PayPal redirige tras la aprobación
+            cancel_url: `${this.backEndUrl}/auth/cancel-payment`,    // URL si el usuario cancela el pago
           }
         };
 
@@ -400,7 +402,7 @@ export class AuthService {
           return {
             success: false,
             message: 'Pedido no encontrado',
-            redirect_url: `${this.frontendUrl}/pago-error`,
+            redirect_url: `${this.frontEndUrl}/pago-error`,
           };
         }
         const newPedido = await this.pedidoModal.create({
@@ -444,7 +446,7 @@ export class AuthService {
         return {
           success: true,
           message: 'Pago completado con éxito',
-          redirect_url: `${this.frontendUrl}/es-Es/pedido-finalizado/${newPedido.id}?talla=${newPedido.tallaSeleccionado}&precio=${newPedido.precioSeleccionado}`, // URL final en el frontend
+          redirect_url: `${this.frontEndUrl}/es-Es/pedido-finalizado/${newPedido.id}?talla=${newPedido.tallaSeleccionado}&precio=${newPedido.precioSeleccionado}`, // URL final en el frontend
         };
       }
     } catch (error) {
@@ -454,7 +456,7 @@ export class AuthService {
       return {
         success: false,
         message: 'Error al capturar el pago de PayPal',
-        redirect_url: `${this.frontendUrl}/pago-error`, // URL de error en el frontend
+        redirect_url: `${this.frontEndUrl}/pago-error`, // URL de error en el frontend
       };
     }
   }
