@@ -3,6 +3,7 @@ import { TiendaService } from './tienda.service';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
 import { UpdateTiendaDto } from './dto/update-tienda.dto';
 import { Productos } from './entities/producto.entity';
+import { Categoria } from './entities/categoria.entity';
 
 
 @Controller('tienda')
@@ -34,6 +35,10 @@ export class TiendaController {
     return this.tiendaService.getProductosByPath(path);
   }
   
+  @Get('GetCategoias')
+  getCategorias():Promise<Categoria[]>{
+    return this.tiendaService.getCategorias();
+  }
 
 
 

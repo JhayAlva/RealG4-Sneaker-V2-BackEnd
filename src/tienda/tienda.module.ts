@@ -4,6 +4,7 @@ import { TiendaController } from './tienda.controller';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Productos, productoSchema } from './entities/producto.entity';
+import { Categoria, CategoriaSchema } from './entities/categoria.entity';
 
 @Module({
   controllers: [TiendaController],
@@ -15,6 +16,10 @@ import { Productos, productoSchema } from './entities/producto.entity';
         name:Productos.name,
         schema:productoSchema
       },
+      {
+        name: Categoria.name,
+        schema: CategoriaSchema
+      }
     ]),
   ],
   exports:[

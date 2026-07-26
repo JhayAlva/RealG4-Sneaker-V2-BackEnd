@@ -3,7 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
 import { UpdateTiendaDto } from './dto/update-tienda.dto';
 import { Productos } from './entities/producto.entity';
+import { Categoria } from './entities/categoria.entity';
 import { Model } from 'mongoose';
+
 
 @Injectable()
 
@@ -12,6 +14,9 @@ export class TiendaService {
   constructor(
     @InjectModel(Productos.name)
     private productosModel:Model<Productos>,
+    @InjectModel(Categoria.name)
+    private categoriaModel:Model<Categoria>
+    
     ){}
   async buscarxNumeroVentas():Promise<Productos[]>{
     return this.productosModel
@@ -38,6 +43,9 @@ export class TiendaService {
                 .exec();
   }
 
+  async getCategorias():Promise<Categoria[]>{
+    return this.categoriaModel.find();
+  }
 
   async getProductosByPath(path:string):Promise<Productos[]>{
     const newPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -56,7 +64,7 @@ export class TiendaService {
     try {
       return this.productosModel.findOne({_id: id});
     } catch (error) {
-      throw new Error(`Error al buscar el producto: ${error.message}`);
+      throw new Error(`Error al buscar el producto: ${error}`);
     }
   }
 
