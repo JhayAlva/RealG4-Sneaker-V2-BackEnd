@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+﻿import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import mongoose, { Model, Types } from 'mongoose';
@@ -82,7 +82,7 @@ export class AuthService {
       return user;
 
     } catch (error) {
-      if (error.code === 11000) {
+      if (error === 11000) {
         throw new BadRequestException(`${createUserDto.email} ya existe!`)
       }
       throw new InternalServerErrorException('Something terribe happen!!!');
@@ -176,7 +176,7 @@ export class AuthService {
 
           let user = await this.userModel.findOne({ _id: id_usuario, 'direcciones._id': direccion._id });
           if (!user) {
-            throw new UnauthorizedException(`No se encontró un usuario con _id: ${usuarioId} o dirección con _id: ${direccion._id}`);
+            throw new UnauthorizedException(`No se encontrÃ³ un usuario con _id: ${usuarioId} o direcciÃ³n con _id: ${direccion._id}`);
           }
 
           let _resultModif = await this.userModel.findOneAndUpdate(
@@ -189,7 +189,7 @@ export class AuthService {
             throw new UnauthorizedException(`Error al Modificar direccion con _id: ${direccion._id}`);
           }
         } catch (error) {
-          console.error('Error durante la actualización:', error);
+          console.error('Error durante la actualizaciÃ³n:', error);
           throw new UnauthorizedException(`Error al Modificar direccion con _id: ${direccion._id}`);
         }
 
@@ -220,10 +220,10 @@ export class AuthService {
           name: clientePedido.nombre,
           phone: clientePedido.telefono,
           address: {
-            city: newPedido.direccionEnvio,
-            country: newPedido.direccionEnvio,
-            state: newPedido.direccionEnvio,
-            line1: newPedido.direccionEnvio
+            city: String(newPedido.direccionEnvio),
+            country: String(newPedido.direccionEnvio),
+            state: String(newPedido.direccionEnvio),
+            line1: String(newPedido.direccionEnvio)
           },
           metadata: { id: newPedido.idCliente }
         };
@@ -298,7 +298,7 @@ export class AuthService {
               token: this.getJwtToken({ id: user.id }),
             };
           } else {
-            console.error('El pedido no tiene la estructura correcta para la inserción.');
+            console.error('El pedido no tiene la estructura correcta para la inserciÃ³n.');
           }
         }
       } else {
@@ -320,7 +320,7 @@ export class AuthService {
 
         let _insertarPedido = await this.pedidoPendienteModal.create(newPedido);
 
-        // Manejar otros métodos de pago si es necesario
+        // Manejar otros mÃ©todos de pago si es necesario
         const orderRequest = {
           intent: 'CAPTURE',
           purchase_units: [{
@@ -333,7 +333,7 @@ export class AuthService {
             brand_name: 'RealG4Sneaker',
             user_action: 'PAY_NOW',
             landing_page: 'NO_PREFERENCE',
-            return_url: `${this.backEndUrl}/auth/execute-payment?pedidoId=${newPedido._id}`,  // URL a la que PayPal redirige tras la aprobación
+            return_url: `${this.backEndUrl}/auth/execute-payment?pedidoId=${newPedido._id}`,  // URL a la que PayPal redirige tras la aprobaciÃ³n
             cancel_url: `${this.backEndUrl}/auth/cancel-payment`,    // URL si el usuario cancela el pago
           }
         };
@@ -394,7 +394,7 @@ export class AuthService {
       );
 
       if (response.data.status === 'COMPLETED') {
-        // Aquí puedes realizar cualquier operación adicional en tu base de datos
+        // AquÃ­ puedes realizar cualquier operacion adicional en tu base de datos
 
         const pedido = await this.pedidoPendienteModal.findById(new mongoose.Types.ObjectId(pedidoId)).lean();
         if (!pedido) {
@@ -442,10 +442,10 @@ export class AuthService {
         const { password: _, ...rest } = user.toJSON();
 
 
-        // Redirigir al frontend con el estado de éxito
+        // Redirigir al frontend con el estado de Ã©xito
         return {
           success: true,
-          message: 'Pago completado con éxito',
+          message: 'Pago completado con Ã©xito',
           redirect_url: `${this.frontEndUrl}/es-Es/pedido-finalizado/${newPedido.id}?talla=${newPedido.tallaSeleccionado}&precio=${newPedido.precioSeleccionado}`, // URL final en el frontend
         };
       }
@@ -461,11 +461,21 @@ export class AuthService {
     }
   }
 
-  async getPedidoUsuario(idPedido: string): Promise<PedidoCliente> {
+  async getPedidoUsuario(idPedido: string): Promise<any> {
     const pedidoRecuperado = await this.pedidoModal.findById(new Types.ObjectId(idPedido))
       .populate('elementosPedido.productoItem')
+      .lean()
       .exec();
-    return pedidoRecuperado;
+
+    if (!pedidoRecuperado) return pedidoRecuperado;
+
+    const usuario = await this.userModel.findById(new Types.ObjectId(pedidoRecuperado.idCliente)).lean().exec();
+    const direccion = usuario?.direcciones?.find((direc: any) => String(direc._id) === String(pedidoRecuperado.direccionEnvio));
+
+    return {
+      ...pedidoRecuperado,
+      direccionEnvio: direccion || pedidoRecuperado.direccionEnvio
+    };
   }
 
   async getProvincia(): Promise<Provincia[]> {
@@ -476,11 +486,22 @@ export class AuthService {
     return this.municipioModal.find({ CPRO: codprov });
   }
 
-  async getPedidosxUsuario(codusuario: string): Promise<PedidoCliente[]> {
-    return this.pedidoModal.find({ idCliente: new Types.ObjectId(codusuario) })
-      .populate('direccionEnvio') // Expande los detalles de la dirección
-      .populate('elementosPedido.productoItem') // Expande los detalles de los productos
+  async getPedidosxUsuario(codusuario: string): Promise<any[]> {
+    const pedidos = await this.pedidoModal.find({ idCliente: new Types.ObjectId(codusuario) })
+      .populate('elementosPedido.productoItem')
+      .lean()
       .exec();
+
+    const usuario = await this.userModel.findById(new Types.ObjectId(codusuario)).lean().exec();
+
+    return pedidos.map((pedido: any) => {
+      const direccion = usuario?.direcciones?.find((direc: any) => String(direc._id) === String(pedido.direccionEnvio));
+
+      return {
+        ...pedido,
+        direccionEnvio: direccion || pedido.direccionEnvio
+      };
+    });
   }
 
   findAll(): Promise<User[]> {
@@ -512,3 +533,6 @@ export class AuthService {
   }
 
 }
+
+
+

@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+﻿import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
 
 @Schema() // Nombre de la tabla en la base de datos
@@ -28,8 +28,8 @@ export class PedidoPendiente {
     @Prop({ required: true })
     totalPedido: number;
 
-    @Prop({ required: true, default: '' })
-    direccionEnvio: string;
+    @Prop({ type: Types.ObjectId, required: true })
+    direccionEnvio: Types.ObjectId;
 
     @Prop({ required: true, default: '' })
     fechaPedido: Date;
